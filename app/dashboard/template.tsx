@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const [currentTime, setCurrentTime] = useState(new Date());
