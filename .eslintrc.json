@@ -1,6 +1,7 @@
 {
   "extends": [
     "next/core-web-vitals",
+    "eslint:recommended", // Base ESLint recommended rules
     "next/typescript"
   ]
 }
