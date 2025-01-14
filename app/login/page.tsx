@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 
 interface Errors {
   username?: string;
@@ -8,8 +8,8 @@ interface Errors {
 }
 
 export default function Page() {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<Errors>({});
 
   const handleLogin = (e: FormEvent) => {
@@ -17,11 +17,11 @@ export default function Page() {
     const validationErrors: Errors = {};
 
     if (!username) {
-      validationErrors.username = "Username is required";
+      validationErrors.username = 'Username is required';
     }
 
     if (!password) {
-      validationErrors.password = "Password is required";
+      validationErrors.password = 'Password is required';
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -30,7 +30,7 @@ export default function Page() {
     }
 
     // Handle the login logic here
-    console.log("Logging in with", username, password);
+    console.log('Logging in with', username, password);
   };
 
   const handleChangeUsername = (e: ChangeEvent<HTMLInputElement>) => {
@@ -42,18 +42,18 @@ export default function Page() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Login Page</h1>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
+        <h1 className="mb-4 text-2xl font-bold">Login Page</h1>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label
               htmlFor="username"
-              className="block mb-2 text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-medium text-gray-700"
             >
               Username:
               {errors.username && (
-                <p className="text-red-500 text-sm mt-1 inline-block float-right">
+                <p className="float-right mt-1 inline-block text-sm text-red-500">
                   {errors.username}
                 </p>
               )}
@@ -63,17 +63,17 @@ export default function Page() {
               id="username"
               value={username}
               onChange={handleChangeUsername}
-              className={`w-full p-2 border border-gray-300 rounded-md`}
+              className={`w-full rounded-md border border-gray-300 p-2`}
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-medium text-gray-700"
             >
               Password:
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1 inline-block float-right">
+                <p className="float-right mt-1 inline-block text-sm text-red-500">
                   {errors.password}
                 </p>
               )}
@@ -83,12 +83,12 @@ export default function Page() {
               id="password"
               value={password}
               onChange={handleChangePassword}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full rounded-md border border-gray-300 p-2"
             />
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
             Login
           </button>

@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import SideNav from "@/app/ui/dashboard/sidenav";
-import { useState, useEffect } from "react";
+import React from 'react';
+import SideNav from '@/app/ui/dashboard/sidenav';
+import { useState, useEffect } from 'react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [currentTime, setCurrentTime] = useState(new Date());
