@@ -1,7 +1,12 @@
 {
   "extends": [
+    "prettier",
     "next/core-web-vitals",
-    "eslint:recommended", // Base ESLint recommended rules
     "next/typescript"
-  ]
+    // "eslint:recommended", // Base ESLint recommended rules
+    // "plugin:prettier/recommended", // Prettier integration
+  ],
+  "rules": {
+    "no-undef": "warn"
+  }
 }
