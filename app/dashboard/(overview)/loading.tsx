@@ -1,4 +1,6 @@
 // app/dashboard/(overview)/loading.tsx
+import DashboardSkeleton from '@/app/ui/skeletons';
+
 export default function Loading() {
-  return <div>Loading Dashboard Overview...</div>;
+  return <DashboardSkeleton />;
 }
