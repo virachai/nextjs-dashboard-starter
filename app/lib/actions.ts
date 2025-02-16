@@ -101,6 +101,8 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
+  // if (1) throw new Error('Failed to Delete Invoice');
+
   try {
     UUIDSchema.parse(id);
   } catch (error) {
