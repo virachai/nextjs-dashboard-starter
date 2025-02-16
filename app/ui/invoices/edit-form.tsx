@@ -126,7 +126,8 @@ export default function EditInvoiceForm({
           Cancel
         </Link>
         <Button
-          type="reset"
+          onClick={() => window.location.reload()}
+          type="button"
           className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium transition-colors hover:bg-gray-200"
         >
           <p className="text-gray-600">Reload Form</p>

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import sanitizeHtml from 'sanitize-html'; // Import sanitize-html
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -37,8 +38,20 @@ export type State = {
   message?: string | null;
 };
 
+function sanitizeInput(input: string): string {
+  // Use sanitize-html to sanitize input
+  return sanitizeHtml(input, {
+    allowedTags: [], // Remove all tags by default
+    allowedAttributes: {}, // Remove all attributes by default
+  });
+}
+
 export async function createInvoice(prevState: State, formData: FormData) {
-  const validatedFields = CreateInvoice.safeParse(formData);
+  const validatedFields = CreateInvoice.safeParse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
 
   if (!validatedFields.success) {
     return Object.assign({}, prevState, {
@@ -50,11 +63,12 @@ export async function createInvoice(prevState: State, formData: FormData) {
   const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
   const date = new Date().toISOString().split('T')[0];
+  const sanitizedCustomerId = sanitizeInput(customerId);
 
   try {
     await sql`
       INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+      VALUES (${sanitizedCustomerId}, ${amountInCents}, ${status}, ${date})
     `;
   } catch (error) {
     const message = 'Database Error: Failed to Create Invoice.';
@@ -96,15 +110,20 @@ export async function updateInvoice(
 
   const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
+  const sanitizedCustomerId = sanitizeInput(customerId);
 
   try {
     await sql`
       UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+      SET customer_id = ${sanitizedCustomerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
     `;
   } catch (error) {
-    return { message: 'Database Error: Failed to Update Invoice.' };
+    const message = 'Database Error: Failed to Update Invoice.';
+    console.error(message, error);
+    return Object.assign({}, prevState, {
+      message: message,
+    });
   }
 
   revalidatePath('/dashboard/invoices');
