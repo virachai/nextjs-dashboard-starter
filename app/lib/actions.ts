@@ -5,19 +5,22 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
-
-const { window } = new JSDOM('');
-const domPurify = DOMPurify(window);
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 const FormSchema = z.object({
-  id: z.string().uuid(),
-  customerId: z.string().min(1, { message: 'Customer ID is required' }),
-  amount: z.coerce.number().gt(0, { message: 'Amount must be greater than 0' }),
-  status: z.enum(['pending', 'paid']),
+  id: z.string(),
+  customerId: z.string({
+    message: 'Please select a customer.',
+  }),
+  amount: z.coerce
+    .number({
+      message: 'Expected number.',
+    })
+    .gt(0, { message: 'Please enter an amount greater than $0.' }),
+  status: z.enum(['pending', 'paid'], {
+    message: 'Please select an invoice status.',
+  }),
   date: z.string(),
 });
 
@@ -25,24 +28,26 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const UUIDSchema = z.string().uuid({ message: 'Invalid UUID format' });
 
-function sanitizeInput(input: string): string {
-  return domPurify.sanitize(input);
-}
-
-export async function createInvoice(formData: FormData) {
-  const rawFormData = {
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
+export type State = {
+  errors?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
   };
+  message?: string | null;
+};
 
-  const sanitizedFormData = {
-    customerId: sanitizeInput(rawFormData.customerId as string),
-    amount: rawFormData.amount,
-    status: sanitizeInput(rawFormData.status as string),
-  };
+export async function createInvoice(prevState: State, formData: FormData) {
+  const validatedFields = CreateInvoice.safeParse(formData);
 
-  const { customerId, amount, status } = CreateInvoice.parse(sanitizedFormData);
+  if (!validatedFields.success) {
+    return Object.assign({}, prevState, {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Invoice.',
+    });
+  }
+
+  const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
   const date = new Date().toISOString().split('T')[0];
 
@@ -52,16 +57,22 @@ export async function createInvoice(formData: FormData) {
       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
   } catch (error) {
-    // Log the error to the console for now
-    console.error('Error inserting invoice:', error);
+    const message = 'Database Error: Failed to Create Invoice.';
+    console.error(message, error);
+    return Object.assign({}, prevState, {
+      message: message,
+    });
   }
 
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
 
-export async function updateInvoice(id: string, formData: FormData) {
-  // Validate the ID
+export async function updateInvoice(
+  id: string,
+  prevState: State,
+  formData: FormData
+) {
   try {
     UUIDSchema.parse(id);
   } catch (error) {
@@ -70,19 +81,20 @@ export async function updateInvoice(id: string, formData: FormData) {
     );
   }
 
-  const rawFormData = {
+  const validatedFields = UpdateInvoice.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
-  };
+  });
 
-  const sanitizedFormData = {
-    customerId: sanitizeInput(rawFormData.customerId as string),
-    amount: rawFormData.amount,
-    status: sanitizeInput(rawFormData.status as string),
-  };
+  if (!validatedFields.success) {
+    return Object.assign({}, prevState, {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Invoice.',
+    });
+  }
 
-  const { customerId, amount, status } = UpdateInvoice.parse(sanitizedFormData);
+  const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
 
   try {
@@ -92,8 +104,7 @@ export async function updateInvoice(id: string, formData: FormData) {
       WHERE id = ${id}
     `;
   } catch (error) {
-    // Log the error to the console for now
-    console.error('Error updating invoice:', error);
+    return { message: 'Database Error: Failed to Update Invoice.' };
   }
 
   revalidatePath('/dashboard/invoices');
@@ -101,8 +112,6 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
-  // if (1) throw new Error('Failed to Delete Invoice');
-
   try {
     UUIDSchema.parse(id);
   } catch (error) {
@@ -114,7 +123,6 @@ export async function deleteInvoice(id: string) {
   try {
     await sql`DELETE FROM invoices WHERE id = ${id}`;
   } catch (error) {
-    // Log the error to the console for now
     console.error('Error deleting invoice:', error);
   }
 
