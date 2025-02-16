@@ -65,7 +65,9 @@ export async function updateInvoice(id: string, formData: FormData) {
   try {
     UUIDSchema.parse(id);
   } catch (error) {
-    throw new Error('Invalid UUID format for invoice ID');
+    throw new Error(
+      `Invalid UUID format for invoice ID: ${JSON.stringify(error)}`
+    );
   }
 
   const rawFormData = {
@@ -99,11 +101,12 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
-  // Validate the ID
   try {
     UUIDSchema.parse(id);
   } catch (error) {
-    throw new Error('Invalid UUID format for invoice ID');
+    throw new Error(
+      `Invalid UUID format for invoice ID: ${JSON.stringify(error)}`
+    );
   }
 
   try {
