@@ -92,7 +92,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             <div className="flex gap-4">
               <div className="flex items-center">
                 <input
-                  defaultChecked
+                  // defaultChecked
                   id="pending"
                   name="status"
                   type="radio"
@@ -123,7 +123,20 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
               </div>
             </div>
           </div>
+          <div id="status-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.status &&
+              state.errors.status.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
         </fieldset>
+        <div aria-live="polite" aria-atomic="true">
+          {state.message ? (
+            <p className="mt-2 text-sm text-red-500">{state.message}</p>
+          ) : null}
+        </div>
       </div>
       <div className="mt-6 flex justify-end gap-4">
         <Link
