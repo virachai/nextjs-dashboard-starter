@@ -1,8 +1,11 @@
 import { db } from '@vercel/postgres';
 
-const client = await db.connect();
 
 async function listInvoices() {
+  if (!process.env.POSTGRES_URL) {
+    throw new Error('POSTGRES_URL is not defined');
+  }
+  const client = await db.connect();
   const data = await client.sql`
     SELECT invoices.amount, customers.name
     FROM invoices
